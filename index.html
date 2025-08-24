@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 3.14 Readiness</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #44A833 0%, #6FCF4B 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1em;
+            color: #666;
+        }
+        
+        .ready { color: #4CAF50; }
+        .not-ready { color: #f44336; }
+        .unknown { color: #FF9800; }
+        
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: #f0f0f0;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .package-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #ddd;
+        }
+        
+        .package-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .package-card.ready {
+            border-left-color: #4CAF50;
+        }
+        
+        .package-card.not-ready {
+            border-left-color: #f44336;
+        }
+        
+        .package-card.unknown {
+            border-left-color: #FF9800;
+        }
+        
+        .package-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .package-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .status-badge.ready { background: #4CAF50; }
+        .status-badge.not-ready { background: #f44336; }
+        .status-badge.unknown { background: #FF9800; }
+        
+        .package-info {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .package-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .package-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border: 1px solid #667eea;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .package-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.1);
+            background: #5a6fd8;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: white;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐍 Python 3.14 Readiness</h1>
+            <p>Track popular Python packages' compatibility with Python 3.14</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number ready" id="ready-count">0</div>
+                <div class="stat-label">Ready</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number not-ready" id="not-ready-count">0</div>
+                <div class="stat-label">Not Ready</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number unknown" id="unknown-count">0</div>
+                <div class="stat-label">Unknown</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-count">0</div>
+                <div class="stat-label">Total Packages</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All Packages</button>
+                <button class="filter-btn" data-filter="ready">✅ Ready</button>
+                <button class="filter-btn" data-filter="not-ready">❌ Not Ready</button>
+                <button class="filter-btn" data-filter="unknown">❓ Unknown</button>
+            </div>
+            <input type="text" class="search-box" id="search-input" placeholder="Search packages...">
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Checking Python 3.14 compatibility...</p>
+        </div>
+        
+        <div id="packages-container" class="packages-grid" style="display: none;"></div>
+        
+        <button class="refresh-btn" id="refresh-btn" title="Refresh Data">🔄</button>
+    </div>
+    
+    <div class="footer">
+        <p>Data simulated for demonstration. In production, this would query PyPI and conda-forge APIs.</p>
+    </div>
+
+    <script>
+        // Popular Python packages data (simulated)
+        // TODO: Programmatically fetch popular packages from default and conda-forge channel
+        const popularPackages = [
+            { name: 'requests', description: 'HTTP library for Python', category: 'networking' },
+            { name: 'numpy', description: 'Scientific computing with Python', category: 'scientific' },
+            { name: 'pandas', description: 'Data structures and analysis', category: 'data' },
+            { name: 'matplotlib', description: 'Plotting library', category: 'visualization' },
+            { name: 'scikit-learn', description: 'Machine learning library', category: 'ml' },
+            { name: 'tensorflow', description: 'Machine learning platform', category: 'ml' },
+            { name: 'pytorch', description: 'Deep learning framework', category: 'ml' },
+            { name: 'flask', description: 'Web framework', category: 'web' },
+            { name: 'django', description: 'Web framework', category: 'web' },
+            { name: 'fastapi', description: 'Modern web framework', category: 'web' },
+            { name: 'pytest', description: 'Testing framework', category: 'testing' },
+            { name: 'pillow', description: 'Image processing', category: 'imaging' },
+            { name: 'beautifulsoup4', description: 'Web scraping', category: 'scraping' },
+            { name: 'sqlalchemy', description: 'Database toolkit', category: 'database' },
+            { name: 'celery', description: 'Distributed task queue', category: 'async' },
+            { name: 'redis', description: 'Redis client', category: 'database' },
+            { name: 'psycopg2', description: 'PostgreSQL adapter', category: 'database' },
+            { name: 'jupyter', description: 'Interactive notebooks', category: 'tools' },
+            { name: 'ipython', description: 'Enhanced interactive Python', category: 'tools' },
+            { name: 'click', description: 'Command line interface creation', category: 'cli' },
+            { name: 'pydantic', description: 'Data validation', category: 'validation' },
+            { name: 'httpx', description: 'Async HTTP client', category: 'networking' },
+            { name: 'aiohttp', description: 'Async HTTP client/server', category: 'networking' },
+            { name: 'uvicorn', description: 'ASGI server', category: 'web' },
+            { name: 'gunicorn', description: 'WSGI HTTP server', category: 'web' },
+            { name: 'boto3', description: 'AWS SDK', category: 'cloud' },
+            { name: 'docker', description: 'Docker SDK', category: 'devops' },
+            { name: 'paramiko', description: 'SSH2 protocol library', category: 'networking' },
+            { name: 'cryptography', description: 'Cryptographic recipes', category: 'security' },
+            { name: 'certifi', description: 'Mozilla certificate bundle', category: 'security' }
+        ];
+
+        let packagesData = [];
+        let currentFilter = 'all';
+        let searchTerm = '';
+
+        async function getCondaPackageInfo(owner, packageName){
+            // TODO: Fix 403 Error
+            const response = await fetch(`https://api.anaconda.org/package/${owner}/${packageName})`);
+
+            // If using corsproxy.io free tier, replace `X` with your own key
+            // const response = await fetch(`https://corsproxy.io/?key=X&url=https://api.anaconda.org/package/${owner}/${packageName})`);
+            const data = await response.json();
+
+            const files = data.files || [];
+            // const python314files = files.filter(file =>
+            //     file.attrs && files.attrs.subdir &&
+            //     (file.basename.includes('py314') || file.basename.includes('py3.14'))
+            // );
+
+            // console.log(`name: ${data.name}, versions: ${data.versions}, python314Support: ${python314Files.length > 0}, latestVersion: ${data.latest_version}, files: ${files}`)
+            return {
+                status: 'ready',
+                pypi314: true,
+                conda314: true
+            }
+        }
+
+        // Simulate checking package compatibility
+        function simulatePackageStatus() {
+            return popularPackages.map(pkg => {
+                const rand = Math.random();
+                let status, pypi314, conda314;
+                
+                // Simulate different compatibility statuses
+                if (rand < 0.4) {
+                    status = 'ready';
+                    pypi314 = true;
+                    conda314 = Math.random() < 0.8;
+                } else if (rand < 0.7) {
+                    status = 'not-ready';
+                    pypi314 = false;
+                    conda314 = false;
+                } else {
+                    status = 'unknown';
+                    pypi314 = Math.random() < 0.5;
+                    conda314 = Math.random() < 0.3;
+                }
+                
+                return {
+                    ...pkg,
+                    status,
+                    pypi314,
+                    conda314,
+                    lastChecked: new Date().toISOString().split('T')[0]
+                };
+            });
+        }
+
+        // Simulate checking package compatibility
+        async function getPackageStatus() {
+            return Promise.all(popularPackages.map(async pkg => {
+                const rand = Math.random();
+                const {astatus, apypi314, aconda314} = await getCondaPackageInfo('conda-forge', pkg.name);
+                let status, pypi314, conda314;
+                
+                // Simulate different compatibility statuses
+                if (rand < 0.4) {
+                    status = 'ready';
+                    pypi314 = true;
+                    conda314 = Math.random() < 0.8;
+                } else if (rand < 0.7) {
+                    status = 'not-ready';
+                    pypi314 = false;
+                    conda314 = false;
+                } else {
+                    status = 'unknown';
+                    pypi314 = Math.random() < 0.5;
+                    conda314 = Math.random() < 0.3;
+                }
+                console.log(pkg);
+
+
+                return {
+                    ...pkg,
+                    astatus,
+                    apypi314,
+                    aconda314,
+                    lastChecked: new Date().toISOString().split('T')[0]
+                };
+            }));
+        }
+
+        function updateStats() {
+            const ready = packagesData.filter(p => p.status === 'ready').length;
+            const notReady = packagesData.filter(p => p.status === 'not-ready').length;
+            const unknown = packagesData.filter(p => p.status === 'unknown').length;
+            
+            document.getElementById('ready-count').textContent = ready;
+            document.getElementById('not-ready-count').textContent = notReady;
+            document.getElementById('unknown-count').textContent = unknown;
+            document.getElementById('total-count').textContent = packagesData.length;
+        }
+
+        function createPackageCard(pkg) {
+            const statusText = {
+                'ready': 'Ready',
+                'not-ready': 'Not Ready',
+                'unknown': 'Unknown'
+            };
+
+            return `
+                <div class="package-card ${pkg.status}">
+                    <div class="package-header">
+                        <div class="package-name">${pkg.name}</div>
+                        <div class="status-badge ${pkg.status}">${statusText[pkg.status]}</div>
+                    </div>
+                    <div class="package-info">${pkg.description}</div>
+                    <div class="package-info">
+                        PyPI 3.14: ${pkg.pypi314 ? '✅' : '❌'} | 
+                        Conda-forge 3.14: ${pkg.conda314 ? '✅' : '❌'}
+                    </div>
+                    <div class="package-info" style="font-size: 0.8em;">
+                        Last checked: ${pkg.lastChecked}
+                    </div>
+                    <div class="package-links">
+                        <a href="https://pypi.org/project/${pkg.name}/" class="package-link" target="_blank">PyPI</a>
+                        <a href="https://anaconda.org/conda-forge/${pkg.name}" class="package-link" target="_blank">Conda-forge</a>
+                        <a href="https://github.com/search?q=${pkg.name}" class="package-link" target="_blank">GitHub</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterPackages() {
+            let filtered = packagesData;
+            
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(pkg => pkg.status === currentFilter);
+            }
+            
+            if (searchTerm) {
+                filtered = filtered.filter(pkg => 
+                    pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    pkg.description.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+            
+            return filtered;
+        }
+
+        function renderPackages() {
+            const container = document.getElementById('packages-container');
+            const filtered = filterPackages();
+            
+            container.innerHTML = filtered.map(createPackageCard).join('');
+        }
+
+        function initializeEventListeners() {
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.dataset.filter;
+                    renderPackages();
+                });
+            });
+
+            // Search input
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                renderPackages();
+            });
+
+            // Refresh button
+            document.getElementById('refresh-btn').addEventListener('click', loadData);
+        }
+
+        async function loadData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('packages-container').style.display = 'none';
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Replace getPackageStatus with simulatePackageStatus to see loaded with simulated data
+            packagesData = await simulatePackageStatus();
+            console.log(packagesData);
+            updateStats();
+            renderPackages();
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('packages-container').style.display = 'grid';
+        }
+
+        // Initialize the application
+        async function init() {
+            initializeEventListeners();
+            await loadData();
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
